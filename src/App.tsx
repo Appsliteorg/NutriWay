@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Welcome from "./pages/Welcome";
 import PermissionExplanation from "./pages/PermissionExplanation";
 import ScanPage from "./pages/Scan";
+import ProductResult from "./pages/ProductResult";
 import ResultsPage from "./pages/Results";
 import SettingsPage from "./pages/Settings";
 import NotFound from "./pages/NotFound";
@@ -22,6 +23,7 @@ const App = () => (
           <Route path="/" element={<Welcome />} />
           <Route path="/permission-info" element={<PermissionExplanation />} />
           <Route path="/scan" element={<ScanPage />} />
+          <Route path="/product/:code" element={<ProductResult />} />
           <Route path="/results" element={<ResultsPage />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="*" element={<NotFound />} />
