@@ -1,21 +1,28 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 import { motion } from 'framer-motion';
-import { X, Zap, ZapOff } from 'lucide-react';
+import { X, Zap, ZapOff, CameraOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { showError } from '@/utils/toast';
 
 const ScanPage = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const [isScanning, setIsScanning] = useState(true);
   const [hasFlash, setHasFlash] = useState(false);
   const [isFlashOn, setIsFlashOn] = useState(false);
 
+  // Temporary preview mode flag for design review
+  const isPreviewMode = searchParams.get('preview') === 'true' || true; 
+
   useEffect(() => {
+    // Skip camera initialization if in preview mode
+    if (isPreviewMode) return;
+
     const startScanner = async () => {
       try {
         const html5QrCode = new Html5Qrcode("reader");
@@ -69,12 +76,11 @@ const ScanPage = () => {
         scannerRef.current.stop().catch(console.error);
       }
     };
-  }, [navigate, isScanning]);
+  }, [navigate, isScanning, isPreviewMode]);
 
   const toggleFlash = async () => {
     if (scannerRef.current && hasFlash) {
       try {
-        // Using any cast to fix TS error
         const track = (scannerRef.current as any).getRunningTrack();
         await track?.applyConstraints({
           advanced: [{ torch: !isFlashOn }]
@@ -88,8 +94,17 @@ const ScanPage = () => {
 
   return (
     <div className="fixed inset-0 bg-black z-50 flex flex-col">
-      {/* Camera Preview Container */}
-      <div id="reader" className="absolute inset-0 w-full h-full object-cover" />
+      {/* Camera Preview or Placeholder */}
+      {isPreviewMode ? (
+        <div className="absolute inset-0 w-full h-full bg-gradient-to-b from-gray-900 to-black flex items-center justify-center">
+          <div className="flex flex-col items-center gap-4 opacity-20">
+            <CameraOff size={64} className="text-white" />
+            <span className="text-white font-bold">وضع معاينة التصميم</span>
+          </div>
+        </div>
+      ) : (
+        <div id="reader" className="absolute inset-0 w-full h-full object-cover" />
+      )}
 
       {/* Overlay UI */}
       <div className="relative z-10 flex-1 flex flex-col">
@@ -104,7 +119,7 @@ const ScanPage = () => {
             <X size={24} />
           </Button>
           
-          {hasFlash && (
+          {(hasFlash || isPreviewMode) && (
             <Button 
               variant="ghost" 
               size="icon" 

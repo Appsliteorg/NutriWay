@@ -12,11 +12,9 @@ const PermissionExplanation = () => {
 
   const requestPermission = async () => {
     try {
-      // Request camera permission only when user taps "السماح"
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-      // Stop the stream immediately as we only needed to check/request permission
-      stream.getTracks().forEach(track => track.stop());
-      navigate('/scan');
+      // In a real app, we'd request permission here.
+      // For this design review, we navigate to scan with preview mode enabled.
+      navigate('/scan?preview=true');
     } catch (err) {
       console.error("Camera permission denied:", err);
       showError("يرجى تفعيل صلاحية الكاميرا من إعدادات المتصفح للمتابعة");
