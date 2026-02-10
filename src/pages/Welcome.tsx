@@ -24,11 +24,11 @@ const Welcome = () => {
 
         {/* Content */}
         <h1 className="text-4xl font-black text-gray-900 mb-6 tracking-tight">
-          افحص طعامك بثقة
+          مرحبًا بك
         </h1>
         
         <p className="text-lg text-gray-500 leading-relaxed mb-12 font-medium">
-          تطبيق عربي يساعدك على معرفة جودة المنتجات الغذائية بسرعة وبسهولة.
+          تطبيق ذكي يساعدك على اختيار أطعمة أفضل لك ولعائلتك بسهولة.
         </p>
 
         {/* Primary Action */}
@@ -37,10 +37,10 @@ const Welcome = () => {
             onClick={() => navigate('/permission-info')}
             className="w-full bg-primary hover:bg-primary/90 text-white rounded-[1.5rem] py-7 text-lg font-bold shadow-xl shadow-primary/20 transition-all active:scale-[0.98]"
           >
-            ابدأ الفحص
+            ابدأ الآن
           </Button>
 
-          {/* Temporary Preview Button for Design Review */}
+          {/* Temporary Preview Button */}
           <Button 
             variant="outline"
             onClick={() => navigate('/product/1234567890123')}
