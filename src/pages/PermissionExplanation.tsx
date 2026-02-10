@@ -4,50 +4,77 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { Camera, CheckCircle2 } from 'lucide-react';
+import { Camera, ShieldCheck, Lock } from 'lucide-react';
+import { showError } from '@/utils/toast';
 
 const PermissionExplanation = () => {
   const navigate = useNavigate();
 
+  const requestPermission = async () => {
+    try {
+      // Request camera permission only when user taps "السماح"
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      // Stop the stream immediately as we only needed to check/request permission
+      stream.getTracks().forEach(track => track.stop());
+      navigate('/scan');
+    } catch (err) {
+      console.error("Camera permission denied:", err);
+      showError("يرجى تفعيل صلاحية الكاميرا من إعدادات المتصفح للمتابعة");
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-white flex flex-col px-8 pt-20 pb-12 text-center">
+    <div className="min-h-screen bg-[#F9FAFB] flex flex-col px-8 pt-24 pb-12 text-center">
       <motion.div 
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
         className="flex-1 flex flex-col items-center"
       >
-        <div className="w-20 h-20 bg-blue-50 rounded-3xl flex items-center justify-center mb-8">
-          <Camera size={32} className="text-blue-600" />
+        <div className="relative mb-10">
+          <div className="w-24 h-24 bg-blue-50 rounded-[2.5rem] flex items-center justify-center shadow-sm border border-blue-100/50">
+            <Camera size={40} className="text-blue-600" />
+          </div>
+          <div className="absolute -bottom-2 -right-2 w-10 h-10 bg-white rounded-2xl shadow-md flex items-center justify-center border border-gray-50">
+            <ShieldCheck size={20} className="text-primary" />
+          </div>
         </div>
 
-        <h2 className="text-2xl font-extrabold text-gray-900 mb-4">
-          لماذا نحتاج الكاميرا؟
+        <h2 className="text-2xl font-black text-gray-900 mb-6">
+          الوصول إلى الكاميرا
         </h2>
         
-        <p className="text-gray-500 leading-relaxed mb-10 font-medium">
-          نستخدم الكاميرا لمسح الباركود الخاص بالمنتجات الغذائية وتحليل مكوناتها فوراً.
-        </p>
+        <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-gray-100 mb-8">
+          <p className="text-gray-600 leading-relaxed font-medium text-lg">
+            نحتاج إلى الكاميرا فقط لمسح الرمز الشريطي على المنتجات الغذائية.
+            <br />
+            <span className="text-primary font-bold mt-4 block">
+              لا نقوم بحفظ الصور أو أي بيانات شخصية.
+            </span>
+          </p>
+        </div>
 
-        <div className="w-full space-y-4 text-right mb-12">
-          {[
-            'تحليل سريع للمكونات',
-            'تنبيهات الحساسية والسكريات',
-            'بدائل صحية مقترحة'
-          ].map((text, i) => (
-            <div key={i} className="flex items-center gap-3 p-4 bg-gray-50 rounded-2xl border border-gray-100">
-              <CheckCircle2 size={20} className="text-primary shrink-0" />
-              <span className="text-sm font-bold text-gray-700">{text}</span>
-            </div>
-          ))}
+        <div className="flex items-center gap-3 text-gray-400 mb-12">
+          <Lock size={16} />
+          <span className="text-xs font-bold">بياناتك مشفرة وآمنة تماماً</span>
         </div>
       </motion.div>
 
-      <Button 
-        onClick={() => navigate('/scan')}
-        className="w-full bg-primary text-white rounded-[1.5rem] py-7 text-lg font-bold shadow-lg"
-      >
-        متابعة
-      </Button>
+      <div className="space-y-4">
+        <Button 
+          onClick={requestPermission}
+          className="w-full bg-primary hover:bg-primary/90 text-white rounded-[1.5rem] py-7 text-lg font-bold shadow-xl shadow-primary/20 transition-all active:scale-[0.98]"
+        >
+          السماح
+        </Button>
+        
+        <Button 
+          variant="ghost"
+          onClick={() => navigate('/')}
+          className="w-full text-gray-400 hover:text-gray-600 rounded-[1.5rem] py-7 text-lg font-bold"
+        >
+          لاحقًا
+        </Button>
+      </div>
     </div>
   );
 };
