@@ -3,13 +3,12 @@
 import React from 'react';
 import AppLayout from '@/components/AppLayout';
 import { 
-  Globe, 
-  Moon, 
-  Bell, 
   Info, 
+  Activity, 
   Database, 
   ShieldCheck, 
   FileText, 
+  Scale, 
   Mail, 
   Star,
   ChevronLeft
@@ -19,20 +18,19 @@ import { cn } from '@/lib/utils';
 const SettingsPage = () => {
   const sections = [
     {
-      title: "الإعدادات",
-      items: [
-        { icon: Globe, label: "اللغة", value: "العربية", color: "text-blue-500", bg: "bg-blue-50" },
-        { icon: Moon, label: "المظهر", value: "فاتح", color: "text-purple-500", bg: "bg-purple-50" },
-        { icon: Bell, label: "التنبيهات", value: "مفعلة", color: "text-orange-500", bg: "bg-orange-50" },
-      ]
-    },
-    {
       title: "عن التطبيق",
       items: [
         { icon: Info, label: "عن التطبيق", color: "text-primary", bg: "bg-primary/10" },
+        { icon: Activity, label: "كيف يعمل التقييم الغذائي", color: "text-blue-500", bg: "bg-blue-50" },
         { icon: Database, label: "مصادر البيانات", color: "text-cyan-500", bg: "bg-cyan-50" },
+      ]
+    },
+    {
+      title: "الخصوصية والقانون",
+      items: [
         { icon: ShieldCheck, label: "سياسة الخصوصية", color: "text-green-500", bg: "bg-green-50" },
         { icon: FileText, label: "شروط الاستخدام", color: "text-gray-500", bg: "bg-gray-50" },
+        { icon: Scale, label: "التراخيص", color: "text-amber-500", bg: "bg-amber-50" },
       ]
     },
     {
@@ -46,9 +44,9 @@ const SettingsPage = () => {
 
   return (
     <AppLayout>
-      <header className="mb-8">
-        <h1 className="text-2xl font-extrabold text-gray-900">الإعدادات</h1>
-        <p className="text-gray-500 text-sm">تحكم في تفضيلات تطبيقك ومعلوماتك</p>
+      <header className="mb-10">
+        <h1 className="text-2xl font-extrabold text-gray-900">عن التطبيق</h1>
+        <p className="text-gray-500 text-sm">معلومات حول كيفية عمل التطبيق وخصوصيتك</p>
       </header>
 
       <div className="space-y-8">
@@ -68,15 +66,10 @@ const SettingsPage = () => {
                     <div className={cn("p-2.5 rounded-2xl", item.bg, item.color)}>
                       <item.icon size={20} />
                     </div>
-                    <span className="font-bold text-gray-700">{item.label}</span>
+                    <span className="font-bold text-gray-700 text-sm">{item.label}</span>
                   </div>
                   
-                  <div className="flex items-center gap-2">
-                    {item.value && (
-                      <span className="text-xs font-bold text-gray-400">{item.value}</span>
-                    )}
-                    <ChevronLeft size={18} className="text-gray-300" />
-                  </div>
+                  <ChevronLeft size={18} className="text-gray-300" />
                 </button>
               ))}
             </div>
@@ -84,7 +77,10 @@ const SettingsPage = () => {
         ))}
       </div>
 
-      <div className="mt-12 text-center pb-10">
+      <div className="mt-16 text-center pb-10">
+        <div className="inline-flex items-center justify-center w-12 h-12 bg-primary/5 rounded-2xl mb-4">
+          <ShieldCheck className="text-primary/40" size={24} />
+        </div>
         <p className="text-[10px] font-bold text-gray-300 uppercase tracking-widest mb-1">صحتي - الإصدار ١.٠.٠</p>
         <p className="text-[10px] font-medium text-gray-300">صنع بكل حب في العالم العربي</p>
       </div>
