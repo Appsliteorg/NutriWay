@@ -4,7 +4,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Zap, ZapOff, CameraOff, Search, History, Info } from 'lucide-react';
+import { X, Zap, ZapOff, CameraOff, Search, History, Info, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { showError } from '@/utils/toast';
@@ -18,8 +18,39 @@ const ScanPage = () => {
   const [hasFlash, setHasFlash] = useState(false);
   const [isFlashOn, setIsFlashOn] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
+  const [isDetected, setIsDetected] = useState(false);
 
   const isPreviewMode = searchParams.get('preview') === 'true' || true; 
+
+  // Simulate detection in preview mode for design review
+  useEffect(() => {
+    if (isPreviewMode && isScanning) {
+      const timer = setTimeout(() => {
+        handleDetection("1234567890123");
+      }, 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [isScanning, isPreviewMode]);
+
+  const handleDetection = (decodedText: string) => {
+    if (!isScanning) return;
+    
+    setIsScanning(false);
+    setIsDetected(true);
+
+    // Haptic feedback
+    if (window.navigator.vibrate) {
+      window.navigator.vibrate(40);
+    }
+
+    // Brief pause to show confirmation before navigating
+    setTimeout(() => {
+      if (scannerRef.current?.isScanning) {
+        scannerRef.current.stop().catch(console.error);
+      }
+      navigate(`/product/${decodedText}`);
+    }, 600);
+  };
 
   useEffect(() => {
     if (isPreviewMode) return;
@@ -30,7 +61,7 @@ const ScanPage = () => {
         scannerRef.current = html5QrCode;
 
         const config = {
-          fps: 15,
+          fps: 20,
           qrbox: { width: 280, height: 200 },
           aspectRatio: 1.0,
           formatsToSupport: [
@@ -44,14 +75,7 @@ const ScanPage = () => {
         await html5QrCode.start(
           { facingMode: "environment" },
           config,
-          (decodedText) => {
-            if (isScanning) {
-              setIsScanning(false);
-              html5QrCode.stop().then(() => {
-                navigate(`/product/${decodedText}`);
-              });
-            }
-          },
+          (decodedText) => handleDetection(decodedText),
           undefined
         );
 
@@ -76,7 +100,7 @@ const ScanPage = () => {
         scannerRef.current.stop().catch(console.error);
       }
     };
-  }, [navigate, isScanning, isPreviewMode]);
+  }, [navigate, isPreviewMode]);
 
   const toggleFlash = async () => {
     if (scannerRef.current && hasFlash) {
@@ -93,21 +117,41 @@ const ScanPage = () => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black z-50 flex flex-col overflow-hidden font-tajawal">
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 bg-black z-50 flex flex-col overflow-hidden font-tajawal"
+    >
       {/* Immersive Background */}
       {isPreviewMode ? (
         <div className="absolute inset-0 w-full h-full bg-[#0a0a0a] flex items-center justify-center">
           <div className="absolute inset-0 opacity-30 bg-[url('https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=1000')] bg-cover bg-center blur-sm" />
-          <div className="relative z-10 flex flex-col items-center gap-4 opacity-40">
-            <CameraOff size={48} className="text-white/50" />
-            <span className="text-white/50 text-sm font-medium tracking-widest uppercase">وضع المعاينة</span>
-          </div>
+          {!isDetected && (
+            <div className="relative z-10 flex flex-col items-center gap-4 opacity-40">
+              <CameraOff size={48} className="text-white/50" />
+              <span className="text-white/50 text-sm font-medium tracking-widest uppercase">وضع المعاينة</span>
+            </div>
+          )}
         </div>
       ) : (
         <div id="reader" className="absolute inset-0 w-full h-full object-cover" />
       )}
 
-      {/* Top Controls - Glassmorphism */}
+      {/* Detection Flash Overlay */}
+      <AnimatePresence>
+        {isDetected && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 bg-white z-[60] pointer-events-none"
+            transition={{ duration: 0.1 }}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Top Controls */}
       <div className="relative z-20 p-6 flex justify-between items-center">
         <Button 
           variant="ghost" 
@@ -166,33 +210,59 @@ const ScanPage = () => {
 
         <div className="relative w-72 h-56">
           {/* Premium Scanning Frame */}
-          <div className="absolute inset-0 border-2 border-white/10 rounded-[2.5rem]" />
+          <motion.div 
+            animate={isDetected ? { scale: 1.05, borderColor: "rgba(255,255,255,0.8)" } : {}}
+            className="absolute inset-0 border-2 border-white/10 rounded-[2.5rem] transition-colors duration-300" 
+          />
           
           {/* Animated Corners */}
-          <div className="absolute -top-1 -left-1 w-10 h-10 border-t-4 border-l-4 border-primary rounded-tl-[1.5rem]" />
-          <div className="absolute -top-1 -right-1 w-10 h-10 border-t-4 border-r-4 border-primary rounded-tr-[1.5rem]" />
-          <div className="absolute -bottom-1 -left-1 w-10 h-10 border-b-4 border-l-4 border-primary rounded-bl-[1.5rem]" />
-          <div className="absolute -bottom-1 -right-1 w-10 h-10 border-b-4 border-r-4 border-primary rounded-br-[1.5rem]" />
+          <div className={cn("absolute -top-1 -left-1 w-10 h-10 border-t-4 border-l-4 rounded-tl-[1.5rem] transition-colors duration-300", isDetected ? "border-white" : "border-primary")} />
+          <div className={cn("absolute -top-1 -right-1 w-10 h-10 border-t-4 border-r-4 rounded-tr-[1.5rem] transition-colors duration-300", isDetected ? "border-white" : "border-primary")} />
+          <div className={cn("absolute -bottom-1 -left-1 w-10 h-10 border-b-4 border-l-4 rounded-bl-[1.5rem] transition-colors duration-300", isDetected ? "border-white" : "border-primary")} />
+          <div className={cn("absolute -bottom-1 -right-1 w-10 h-10 border-b-4 border-r-4 rounded-br-[1.5rem] transition-colors duration-300", isDetected ? "border-white" : "border-primary")} />
           
           {/* Scanning Beam */}
-          <motion.div 
-            animate={{ 
-              top: ["10%", "90%", "10%"],
-              opacity: [0.4, 0.8, 0.4]
-            }}
-            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute left-6 right-6 h-1 bg-gradient-to-r from-transparent via-primary to-transparent shadow-[0_0_20px_rgba(var(--primary),0.8)] z-20"
-          />
+          {!isDetected && (
+            <motion.div 
+              animate={{ 
+                top: ["10%", "90%", "10%"],
+                opacity: [0.4, 0.8, 0.4]
+              }}
+              transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+              className="absolute left-6 right-6 h-1 bg-gradient-to-r from-transparent via-primary to-transparent shadow-[0_0_20px_rgba(var(--primary),0.8)] z-20"
+            />
+          )}
 
-          {/* Center Icon */}
-          <div className="absolute inset-0 flex items-center justify-center opacity-20">
-            <div className="w-16 h-16 border-2 border-dashed border-white rounded-full animate-spin-slow" />
-          </div>
+          {/* Success Icon */}
+          <AnimatePresence>
+            {isDetected && (
+              <motion.div 
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                className="absolute inset-0 flex items-center justify-center z-30"
+              >
+                <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-2xl">
+                  <Check size={40} className="text-primary" strokeWidth={4} />
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Center Decoration */}
+          {!isDetected && (
+            <div className="absolute inset-0 flex items-center justify-center opacity-20">
+              <div className="w-16 h-16 border-2 border-dashed border-white rounded-full animate-spin-slow" />
+            </div>
+          )}
         </div>
         
         <div className="mt-12 text-center space-y-2">
-          <h3 className="text-white text-xl font-black tracking-wide">امسح الرمز الشريطي</h3>
-          <p className="text-white/50 text-sm font-medium">ضع الرمز داخل الإطار للتعرف عليه تلقائياً</p>
+          <h3 className="text-white text-xl font-black tracking-wide">
+            {isDetected ? "تم التعرف على المنتج" : "امسح الرمز الشريطي"}
+          </h3>
+          <p className="text-white/50 text-sm font-medium">
+            {isDetected ? "جاري جلب البيانات..." : "ضع الرمز داخل الإطار للتعرف عليه تلقائياً"}
+          </p>
         </div>
       </div>
 
@@ -215,7 +285,7 @@ const ScanPage = () => {
 
       {/* Decorative Gradient */}
       <div className="absolute bottom-0 left-0 right-0 h-64 bg-gradient-to-t from-black/80 to-transparent pointer-events-none" />
-    </div>
+    </motion.div>
   );
 };
 
