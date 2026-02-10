@@ -9,6 +9,7 @@ import ScanPage from "./pages/Scan";
 import ProductResult from "./pages/ProductResult";
 import ResultsPage from "./pages/Results";
 import SettingsPage from "./pages/Settings";
+import AboutPage from "./pages/About";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,6 +27,7 @@ const App = () => (
           <Route path="/product/:code" element={<ProductResult />} />
           <Route path="/results" element={<ResultsPage />} />
           <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/about" element={<AboutPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

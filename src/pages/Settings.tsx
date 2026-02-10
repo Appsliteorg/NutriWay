@@ -2,6 +2,7 @@
 
 import React from 'react';
 import AppLayout from '@/components/AppLayout';
+import { useNavigate } from 'react-router-dom';
 import { 
   Info, 
   Activity, 
@@ -16,11 +17,13 @@ import {
 import { cn } from '@/lib/utils';
 
 const SettingsPage = () => {
+  const navigate = useNavigate();
+
   const sections = [
     {
       title: "عن التطبيق",
       items: [
-        { icon: Info, label: "عن التطبيق", color: "text-primary", bg: "bg-primary/10" },
+        { icon: Info, label: "عن التطبيق", color: "text-primary", bg: "bg-primary/10", path: "/about" },
         { icon: Activity, label: "كيف يعمل التقييم الغذائي", color: "text-blue-500", bg: "bg-blue-50" },
         { icon: Database, label: "مصادر البيانات", color: "text-cyan-500", bg: "bg-cyan-50" },
       ]
@@ -57,6 +60,7 @@ const SettingsPage = () => {
               {section.items.map((item, itemIdx) => (
                 <button 
                   key={itemIdx}
+                  onClick={() => item.path && navigate(item.path)}
                   className={cn(
                     "w-full flex items-center justify-between p-5 hover:bg-gray-50 transition-colors active:bg-gray-100",
                     itemIdx !== section.items.length - 1 && "border-b border-gray-50"
