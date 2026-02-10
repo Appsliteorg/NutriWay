@@ -25,7 +25,7 @@ const SettingsPage = () => {
       items: [
         { icon: Info, label: "عن التطبيق", color: "text-primary", bg: "bg-primary/10", path: "/about" },
         { icon: Activity, label: "كيف يعمل التقييم الغذائي", color: "text-blue-500", bg: "bg-blue-50", path: "/methodology" },
-        { icon: Database, label: "مصادر البيانات", color: "text-cyan-500", bg: "bg-cyan-50" },
+        { icon: Database, label: "مصادر البيانات", color: "text-cyan-500", bg: "bg-cyan-50", path: "/data-sources" },
       ]
     },
     {
