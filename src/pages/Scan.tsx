@@ -47,8 +47,8 @@ const ScanPage = () => {
           undefined
         );
 
-        // Check for flash support
-        const track = html5QrCode.getRunningTrack();
+        // Check for flash support - using any cast to fix TS error
+        const track = (html5QrCode as any).getRunningTrack();
         if (track) {
           const capabilities = track.getCapabilities() as any;
           if (capabilities.torch) {
@@ -74,7 +74,8 @@ const ScanPage = () => {
   const toggleFlash = async () => {
     if (scannerRef.current && hasFlash) {
       try {
-        const track = scannerRef.current.getRunningTrack();
+        // Using any cast to fix TS error
+        const track = (scannerRef.current as any).getRunningTrack();
         await track?.applyConstraints({
           advanced: [{ torch: !isFlashOn }]
         } as any);
