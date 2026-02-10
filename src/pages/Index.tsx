@@ -3,7 +3,10 @@
 import React from 'react';
 import AppLayout from '@/components/AppLayout';
 import HealthCard from '@/components/HealthCard';
-import { Footprints, Droplets, Moon, Heart, ChevronLeft, Plus } from 'lucide-react';
+import WaterTracker from '@/components/WaterTracker';
+import HealthInsightCard from '@/components/HealthInsightCard';
+import LogActivityDrawer from '@/components/LogActivityDrawer';
+import { Footprints, Moon, Heart, ChevronLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const Index = () => {
@@ -40,7 +43,6 @@ const Index = () => {
             عرض التفاصيل
           </Button>
         </div>
-        {/* Decorative circles */}
         <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-3xl" />
         <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-black/10 rounded-full blur-3xl" />
       </div>
@@ -55,29 +57,41 @@ const Index = () => {
           trend="+١٢٪"
         />
         <HealthCard 
-          title="شرب الماء"
-          value="١.٥"
-          unit="لتر"
-          icon={<Droplets size={20} />}
-          color="blue"
-        />
-        <HealthCard 
           title="ساعات النوم"
           value="٧:٣٠"
           unit="ساعة"
           icon={<Moon size={20} />}
           color="accent"
         />
-        <HealthCard 
-          title="نبض القلب"
-          value="٧٢"
-          unit="ن/د"
-          icon={<Heart size={20} />}
-        />
       </div>
 
+      {/* Water Tracker */}
+      <WaterTracker />
+
+      {/* Health Insights */}
+      <section className="mb-8">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-lg font-bold text-gray-900">نصائح صحية لك</h2>
+          <button className="text-primary text-sm font-bold">الكل</button>
+        </div>
+        <div className="grid grid-cols-1 gap-4">
+          <HealthInsightCard 
+            title="أهمية النوم المبكر لصحة القلب"
+            category="نمط حياة"
+            image="https://images.unsplash.com/photo-1511295742364-917e703b5ce0?auto=format&fit=crop&q=80&w=400"
+            readTime="٥ دقائق"
+          />
+          <HealthInsightCard 
+            title="أفضل الأطعمة لتقوية المناعة"
+            category="تغذية"
+            image="https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&q=80&w=400"
+            readTime="٣ دقائق"
+          />
+        </div>
+      </section>
+
       {/* Quick Actions */}
-      <section>
+      <section className="mb-8">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-lg font-bold text-gray-900">إجراءات سريعة</h2>
           <button className="text-primary text-sm font-bold">الكل</button>
@@ -101,10 +115,8 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Floating Action Button */}
-      <button className="fixed bottom-24 left-6 w-14 h-14 bg-accent text-white rounded-2xl shadow-lg shadow-accent/30 flex items-center justify-center hover:scale-110 transition-transform z-40">
-        <Plus size={28} />
-      </button>
+      {/* Floating Action Button with Drawer */}
+      <LogActivityDrawer />
     </AppLayout>
   );
 };
