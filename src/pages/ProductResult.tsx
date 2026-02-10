@@ -11,19 +11,23 @@ const ProductResult = () => {
   const { code } = useParams();
   const navigate = useNavigate();
 
-  // Placeholder data for the premium UI
+  // Mock data logic for preview
+  const isMockPreview = code === "1234567890123";
+  
   const product = {
-    name: "اسم المنتج التجريبي",
-    brand: "العلامة التجارية",
+    name: isMockPreview ? "منتج تجريبي" : "اسم المنتج التجريبي",
+    brand: isMockPreview ? "شركة تجريبية" : "العلامة التجارية",
     barcode: code,
-    rating: "صحي", // صحي, متوسط, غير صحي
-    score: 85,
-    reason: "يحتوي على نسبة عالية من الألياف وبروتين طبيعي مع سكر منخفض.",
+    rating: isMockPreview ? "غير صحي" : "صحي",
+    score: isMockPreview ? 32 : 85,
+    reason: isMockPreview 
+      ? "يحتوي على نسبة سكر مرتفعة جداً ومواد حافظة صناعية." 
+      : "يحتوي على نسبة عالية من الألياف وبروتين طبيعي مع سكر منخفض.",
     nutrients: [
-      { label: "الدهون", value: "٢.٥ غ", status: "low" },
-      { label: "السكريات", value: "١.٢ غ", status: "low" },
-      { label: "الألياف", value: "٨.٠ غ", status: "high" },
-      { label: "الصوديوم", value: "٠.١ غ", status: "low" },
+      { label: "الدهون", value: isMockPreview ? "١٢.٥ غ" : "٢.٥ غ", status: isMockPreview ? "high" : "low" },
+      { label: "السكريات", value: isMockPreview ? "٢٨.٠ غ" : "١.٢ غ", status: isMockPreview ? "high" : "low" },
+      { label: "الألياف", value: isMockPreview ? "٠.٥ غ" : "٨.٠ غ", status: isMockPreview ? "low" : "high" },
+      { label: "الصوديوم", value: isMockPreview ? "١.١ غ" : "٠.١ غ", status: isMockPreview ? "high" : "low" },
     ]
   };
 
@@ -74,7 +78,7 @@ const ProductResult = () => {
           variant="ghost" 
           size="icon" 
           className="rounded-2xl bg-white shadow-sm border border-gray-100"
-          onClick={() => navigate('/scan')}
+          onClick={() => navigate('/')}
         >
           <ArrowRight size={20} />
         </Button>

@@ -4,7 +4,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { ShieldCheck } from 'lucide-react';
+import { ShieldCheck, Eye } from 'lucide-react';
 
 const Welcome = () => {
   const navigate = useNavigate();
@@ -32,12 +32,24 @@ const Welcome = () => {
         </p>
 
         {/* Primary Action */}
-        <Button 
-          onClick={() => navigate('/permission-info')}
-          className="w-full bg-primary hover:bg-primary/90 text-white rounded-[1.5rem] py-7 text-lg font-bold shadow-xl shadow-primary/20 transition-all active:scale-[0.98]"
-        >
-          ابدأ الآن
-        </Button>
+        <div className="w-full space-y-4">
+          <Button 
+            onClick={() => navigate('/permission-info')}
+            className="w-full bg-primary hover:bg-primary/90 text-white rounded-[1.5rem] py-7 text-lg font-bold shadow-xl shadow-primary/20 transition-all active:scale-[0.98]"
+          >
+            ابدأ الآن
+          </Button>
+
+          {/* Temporary Preview Button */}
+          <Button 
+            variant="outline"
+            onClick={() => navigate('/product/1234567890123')}
+            className="w-full border-gray-200 text-gray-500 rounded-[1.5rem] py-7 text-lg font-bold hover:bg-gray-50 transition-all"
+          >
+            <Eye size={20} className="ml-2" />
+            معاينة شاشة النتائج
+          </Button>
+        </div>
       </motion.div>
 
       {/* Subtle background decoration */}
