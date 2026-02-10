@@ -31,7 +31,7 @@ const SettingsPage = () => {
     {
       title: "الخصوصية والقانون",
       items: [
-        { icon: ShieldCheck, label: "سياسة الخصوصية", color: "text-green-500", bg: "bg-green-50" },
+        { icon: ShieldCheck, label: "سياسة الخصوصية", color: "text-green-500", bg: "bg-green-50", path: "/privacy-policy" },
         { icon: FileText, label: "شروط الاستخدام", color: "text-gray-500", bg: "bg-gray-50" },
         { icon: Scale, label: "التراخيص", color: "text-amber-500", bg: "bg-amber-50" },
       ]

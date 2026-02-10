@@ -12,6 +12,7 @@ import SettingsPage from "./pages/Settings";
 import AboutPage from "./pages/About";
 import MethodologyPage from "./pages/Methodology";
 import DataSourcesPage from "./pages/DataSources";
+import PrivacyPolicyPage from "./pages/PrivacyPolicy";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -32,6 +33,7 @@ const App = () => (
           <Route path="/about" element={<AboutPage />} />
           <Route path="/methodology" element={<MethodologyPage />} />
           <Route path="/data-sources" element={<DataSourcesPage />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
