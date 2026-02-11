@@ -13,6 +13,8 @@ import AboutPage from "./pages/About";
 import MethodologyPage from "./pages/Methodology";
 import DataSourcesPage from "./pages/DataSources";
 import PrivacyPolicyPage from "./pages/PrivacyPolicy";
+import TermsOfUsePage from "./pages/TermsOfUse";
+import ContactPage from "./pages/Contact";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -34,6 +36,8 @@ const App = () => (
           <Route path="/methodology" element={<MethodologyPage />} />
           <Route path="/data-sources" element={<DataSourcesPage />} />
           <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+          <Route path="/terms-of-use" element={<TermsOfUsePage />} />
+          <Route path="/contact" element={<ContactPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

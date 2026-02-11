@@ -32,14 +32,14 @@ const SettingsPage = () => {
       title: "الخصوصية والقانون",
       items: [
         { icon: ShieldCheck, label: "سياسة الخصوصية", color: "text-green-500", bg: "bg-green-50", path: "/privacy-policy" },
-        { icon: FileText, label: "شروط الاستخدام", color: "text-gray-500", bg: "bg-gray-50" },
+        { icon: FileText, label: "شروط الاستخدام", color: "text-gray-500", bg: "bg-gray-50", path: "/terms-of-use" },
         { icon: Scale, label: "التراخيص", color: "text-amber-500", bg: "bg-amber-50" },
       ]
     },
     {
       title: "الدعم",
       items: [
-        { icon: Mail, label: "تواصل معنا", color: "text-indigo-500", bg: "bg-indigo-50" },
+        { icon: Mail, label: "تواصل معنا", color: "text-indigo-500", bg: "bg-indigo-50", path: "/contact" },
         { icon: Star, label: "قيّم التطبيق", color: "text-yellow-500", bg: "bg-yellow-50" },
       ]
     }
