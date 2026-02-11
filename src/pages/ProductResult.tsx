@@ -56,13 +56,23 @@ const ProductResult = () => {
     );
   }
 
-  // Mapping Nutri-Score to UI
+  // Mapping Nutri-Score to UI based on user logic
   const getHealthStatus = (grade?: string) => {
-    const g = grade?.toLowerCase();
-    if (g === 'a' || g === 'b') return { label: "صحي", status: "success" };
-    if (g === 'c') return { label: "متوسط", status: "warning" };
-    if (g === 'd' || g === 'e') return { label: "غير صحي", status: "danger" };
-    return { label: "غير معروف", status: "unknown" };
+    if (!grade) return { label: "غير متوفر", status: "unknown", emoji: "" };
+    
+    const g = grade.toLowerCase();
+    switch (g) {
+      case "a":
+      case "b":
+        return { label: "صحي", status: "success", emoji: "🟢" };
+      case "c":
+        return { label: "متوسط", status: "warning", emoji: "🟡" };
+      case "d":
+      case "e":
+        return { label: "غير صحي", status: "danger", emoji: "🔴" };
+      default:
+        return { label: "غير متوفر", status: "unknown", emoji: "" };
+    }
   };
 
   const health = getHealthStatus(product.nutriscore_grade);
@@ -83,9 +93,9 @@ const ProductResult = () => {
   };
 
   const indicators = [
-    { label: "السكر", ...getIndicatorLevel(product.nutriments?.sugars_100g, 'sugar') },
-    { label: "الدهون", ...getIndicatorLevel(product.nutriments?.fat_100g, 'fat') },
-    { label: "الملح", ...getIndicatorLevel(product.nutriments?.salt_100g, 'salt') },
+    { label: "السكر", value: product.nutriments?.sugars_100g || 0, ...getIndicatorLevel(product.nutriments?.sugars_100g, 'sugar') },
+    { label: "الدهون", value: product.nutriments?.fat_100g || 0, ...getIndicatorLevel(product.nutriments?.fat_100g, 'fat') },
+    { label: "الملح", value: product.nutriments?.salt_100g || 0, ...getIndicatorLevel(product.nutriments?.salt_100g, 'salt') },
   ];
 
   const getStatusConfig = (status: string) => {
@@ -166,11 +176,14 @@ const ProductResult = () => {
         <div className={cn("w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg", config.bg)}>
           {config.icon}
         </div>
-        <h3 className={cn("text-3xl font-black mb-2", config.text)}>{health.label}</h3>
+        <h3 className={cn("text-3xl font-black mb-2", config.text)}>
+          {health.emoji} {health.label}
+        </h3>
         <p className="text-gray-600 font-medium">
           {health.status === 'success' ? 'خيار ممتاز غني بالعناصر الغذائية المفيدة.' : 
            health.status === 'warning' ? 'يحتوي على بعض المكونات التي يجب تناولها باعتدال.' : 
-           'يحتوي على نسبة عالية من السكر أو الدهون أو الملح.'}
+           health.status === 'danger' ? 'يحتوي على نسبة عالية من السكر أو الدهون أو الملح.' :
+           'لا تتوفر معلومات كافية لتقييم هذا المنتج.'}
         </p>
       </div>
 
@@ -181,7 +194,10 @@ const ProductResult = () => {
             <div key={i} className="flex items-center justify-between">
               <div className="flex-1">
                 <div className="flex justify-between items-center mb-2">
-                  <span className="font-bold text-gray-900">{ind.label}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-gray-900">{ind.label}</span>
+                    <span className="text-xs text-gray-400 font-medium">({ind.value} جم)</span>
+                  </div>
                   <span className={cn(
                     "text-xs font-bold px-3 py-1 rounded-full",
                     ind.status === 'success' ? 'bg-green-50 text-green-600' : 
