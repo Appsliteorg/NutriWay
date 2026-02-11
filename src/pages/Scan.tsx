@@ -19,41 +19,43 @@ const ScanPage = () => {
   const [isFlashOn, setIsFlashOn] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [isDetected, setIsDetected] = useState(false);
+  const [cameraError, setCameraError] = useState(false);
 
-  const isPreviewMode = searchParams.get('preview') === 'true' || true; 
-
-  // Simulate detection in preview mode for design review
-  useEffect(() => {
-    if (isPreviewMode && isScanning) {
-      const timer = setTimeout(() => {
-        handleDetection("1234567890123");
-      }, 4000);
-      return () => clearTimeout(timer);
-    }
-  }, [isScanning, isPreviewMode]);
+  const isPreviewMode = searchParams.get('preview') === 'true'; 
 
   const handleDetection = (decodedText: string) => {
-    if (!isScanning) return;
+    if (!isScanning || isDetected) return;
     
-    setIsScanning(false);
     setIsDetected(true);
+    setIsScanning(false);
 
     // Haptic feedback
     if (window.navigator.vibrate) {
       window.navigator.vibrate(40);
     }
 
-    // Brief pause to show confirmation before navigating
-    setTimeout(() => {
-      if (scannerRef.current?.isScanning) {
-        scannerRef.current.stop().catch(console.error);
-      }
-      navigate(`/product/${decodedText}`);
-    }, 600);
+    // Stop scanner immediately
+    if (scannerRef.current?.isScanning) {
+      scannerRef.current.stop().then(() => {
+        setTimeout(() => {
+          navigate(`/product/${decodedText}`);
+        }, 600);
+      }).catch(console.error);
+    } else {
+      setTimeout(() => {
+        navigate(`/product/${decodedText}`);
+      }, 600);
+    }
   };
 
   useEffect(() => {
-    if (isPreviewMode) return;
+    if (isPreviewMode) {
+      // Simulation for preview mode
+      const timer = setTimeout(() => {
+        handleDetection("1234567890123");
+      }, 4000);
+      return () => clearTimeout(timer);
+    }
 
     const startScanner = async () => {
       try {
@@ -79,6 +81,7 @@ const ScanPage = () => {
           undefined
         );
 
+        // Check for flash capability
         const track = (html5QrCode as any).getRunningTrack();
         if (track) {
           const capabilities = track.getCapabilities() as any;
@@ -88,8 +91,8 @@ const ScanPage = () => {
         }
       } catch (err) {
         console.error("Scanner failed:", err);
-        showError("فشل تشغيل الكاميرا. يرجى التحقق من الصلاحيات.");
-        navigate('/permission-info');
+        setCameraError(true);
+        showError("تعذر تشغيل الكاميرا. تأكد من منح الإذن.");
       }
     };
 
@@ -123,19 +126,24 @@ const ScanPage = () => {
       exit={{ opacity: 0 }}
       className="fixed inset-0 bg-black z-50 flex flex-col overflow-hidden font-tajawal"
     >
-      {/* Immersive Background */}
-      {isPreviewMode ? (
-        <div className="absolute inset-0 w-full h-full bg-[#0a0a0a] flex items-center justify-center">
-          <div className="absolute inset-0 opacity-30 bg-[url('https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=1000')] bg-cover bg-center blur-sm" />
-          {!isDetected && (
-            <div className="relative z-10 flex flex-col items-center gap-4 opacity-40">
-              <CameraOff size={48} className="text-white/50" />
-              <span className="text-white/50 text-sm font-medium tracking-widest uppercase">وضع المعاينة</span>
-            </div>
-          )}
+      {/* Camera Feed Container */}
+      <div id="reader" className="absolute inset-0 w-full h-full object-cover" />
+
+      {/* Error State Overlay */}
+      {cameraError && !isPreviewMode && (
+        <div className="absolute inset-0 bg-[#0a0a0a] flex flex-col items-center justify-center z-50 px-10 text-center">
+          <div className="w-20 h-20 bg-red-500/10 rounded-3xl flex items-center justify-center mb-6">
+            <CameraOff size={40} className="text-red-500" />
+          </div>
+          <h3 className="text-white text-xl font-black mb-4">تعذر تشغيل الكاميرا</h3>
+          <p className="text-white/60 mb-8 leading-relaxed">تأكد من منح الإذن للكاميرا من إعدادات المتصفح للمتابعة.</p>
+          <Button 
+            onClick={() => navigate('/permission-info')}
+            className="bg-primary text-white rounded-2xl px-8 py-6 font-bold"
+          >
+            عرض التعليمات
+          </Button>
         </div>
-      ) : (
-        <div id="reader" className="absolute inset-0 w-full h-full object-cover" />
       )}
 
       {/* Detection Flash Overlay */}
@@ -222,7 +230,7 @@ const ScanPage = () => {
           <div className={cn("absolute -bottom-1 -right-1 w-10 h-10 border-b-4 border-r-4 rounded-br-[1.5rem] transition-colors duration-300", isDetected ? "border-white" : "border-primary")} />
           
           {/* Scanning Beam */}
-          {!isDetected && (
+          {!isDetected && !cameraError && (
             <motion.div 
               animate={{ 
                 top: ["10%", "90%", "10%"],
@@ -249,7 +257,7 @@ const ScanPage = () => {
           </AnimatePresence>
 
           {/* Center Decoration */}
-          {!isDetected && (
+          {!isDetected && !cameraError && (
             <div className="absolute inset-0 flex items-center justify-center opacity-20">
               <div className="w-16 h-16 border-2 border-dashed border-white rounded-full animate-spin-slow" />
             </div>
