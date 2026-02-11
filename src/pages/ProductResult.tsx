@@ -1,38 +1,96 @@
 "use client";
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import AppLayout from '@/components/AppLayout';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, AlertCircle, CheckCircle2, Info, ShieldAlert, Beaker } from 'lucide-react';
+import { ArrowRight, AlertCircle, CheckCircle2, Info, Beaker, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { fetchProduct, ProductData } from '@/services/foodApi';
 
 const ProductResult = () => {
   const { code } = useParams();
   const navigate = useNavigate();
+  const [product, setProduct] = useState<ProductData | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  // Mock data logic for preview
-  const isMockPreview = code === "1234567890123";
-  
-  const product = {
-    name: isMockPreview ? "بسكويت الشوكولاتة الداكنة" : "منتج غذائي",
-    brand: isMockPreview ? "حلويات السعادة" : "العلامة التجارية",
-    status: isMockPreview ? "غير صحي" : "صحي",
-    explanation: isMockPreview 
-      ? "يحتوي على نسبة سكر مرتفعة جداً" 
-      : "خيار ممتاز غني بالألياف الطبيعية",
-    indicators: [
-      { label: "السكر", level: isMockPreview ? "مرتفع" : "منخفض", status: isMockPreview ? "danger" : "success" },
-      { label: "الدهون", level: isMockPreview ? "متوسط" : "منخفض", status: isMockPreview ? "warning" : "success" },
-      { label: "الملح", level: isMockPreview ? "منخفض" : "منخفض", status: "success" },
-    ],
-    hasAdditives: isMockPreview,
-    additivesText: "يحتوي على مواد مضافة صناعية"
+  useEffect(() => {
+    const getProduct = async () => {
+      if (code) {
+        const data = await fetchProduct(code);
+        setProduct(data);
+      }
+      setLoading(false);
+    };
+    getProduct();
+  }, [code]);
+
+  if (loading) {
+    return (
+      <AppLayout>
+        <div className="flex flex-col items-center justify-center min-h-[60vh]">
+          <Loader2 className="w-12 h-12 text-primary animate-spin mb-4" />
+          <p className="text-gray-500 font-bold">جاري جلب بيانات المنتج...</p>
+        </div>
+      </AppLayout>
+    );
+  }
+
+  if (!product) {
+    return (
+      <AppLayout>
+        <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-6">
+          <div className="w-20 h-20 bg-red-50 rounded-3xl flex items-center justify-center mb-6">
+            <AlertCircle className="text-red-500" size={40} />
+          </div>
+          <h2 className="text-2xl font-black text-gray-900 mb-2">عذراً، المنتج غير موجود</h2>
+          <p className="text-gray-500 mb-8">لم نتمكن من العثور على معلومات لهذا المنتج في قاعدة بياناتنا.</p>
+          <Button 
+            className="w-full bg-primary text-white rounded-2xl py-6 font-bold"
+            onClick={() => navigate('/scan')}
+          >
+            مسح منتج آخر
+          </Button>
+        </div>
+      </AppLayout>
+    );
+  }
+
+  // Mapping Nutri-Score to UI
+  const getHealthStatus = (grade?: string) => {
+    const g = grade?.toLowerCase();
+    if (g === 'a' || g === 'b') return { label: "صحي", status: "success" };
+    if (g === 'c') return { label: "متوسط", status: "warning" };
+    if (g === 'd' || g === 'e') return { label: "غير صحي", status: "danger" };
+    return { label: "غير معروف", status: "unknown" };
   };
+
+  const health = getHealthStatus(product.nutriscore_grade);
+
+  const getIndicatorLevel = (value: number | undefined, type: 'sugar' | 'fat' | 'salt') => {
+    if (value === undefined) return { label: "غير متوفر", status: "unknown", width: "0%" };
+    
+    const thresholds = {
+      sugar: { low: 5, high: 22.5 },
+      fat: { low: 3, high: 17.5 },
+      salt: { low: 0.3, high: 1.5 }
+    };
+
+    const t = thresholds[type];
+    if (value <= t.low) return { label: "منخفض", status: "success", width: "33%" };
+    if (value <= t.high) return { label: "متوسط", status: "warning", width: "66%" };
+    return { label: "مرتفع", status: "danger", width: "100%" };
+  };
+
+  const indicators = [
+    { label: "السكر", ...getIndicatorLevel(product.nutriments?.sugars_100g, 'sugar') },
+    { label: "الدهون", ...getIndicatorLevel(product.nutriments?.fat_100g, 'fat') },
+    { label: "الملح", ...getIndicatorLevel(product.nutriments?.salt_100g, 'salt') },
+  ];
 
   const getStatusConfig = (status: string) => {
     switch (status) {
-      case "صحي":
+      case "success":
         return {
           bg: "bg-green-500",
           lightBg: "bg-green-50",
@@ -40,7 +98,7 @@ const ProductResult = () => {
           icon: <CheckCircle2 className="text-white" size={32} />,
           border: "border-green-100"
         };
-      case "متوسط":
+      case "warning":
         return {
           bg: "bg-orange-500",
           lightBg: "bg-orange-50",
@@ -48,7 +106,7 @@ const ProductResult = () => {
           icon: <Info className="text-white" size={32} />,
           border: "border-orange-100"
         };
-      case "غير صحي":
+      case "danger":
         return {
           bg: "bg-red-500",
           lightBg: "bg-red-50",
@@ -67,11 +125,10 @@ const ProductResult = () => {
     }
   };
 
-  const config = getStatusConfig(product.status);
+  const config = getStatusConfig(health.status);
 
   return (
     <AppLayout>
-      {/* Header */}
       <header className="flex items-center justify-between mb-8">
         <Button 
           variant="ghost" 
@@ -85,33 +142,42 @@ const ProductResult = () => {
         <div className="w-10" />
       </header>
 
-      {/* Product Info */}
       <div className="flex flex-col items-center text-center mb-8">
         <div className="w-32 h-32 bg-white rounded-[2.5rem] shadow-sm border border-gray-100 flex items-center justify-center mb-4 overflow-hidden">
-          <img 
-            src="/placeholder.svg" 
-            alt="Product" 
-            className="w-20 h-20 opacity-10"
-          />
+          {product.image_url ? (
+            <img 
+              src={product.image_url} 
+              alt={product.product_name} 
+              className="w-full h-full object-contain p-2"
+            />
+          ) : (
+            <img 
+              src="/placeholder.svg" 
+              alt="Product" 
+              className="w-20 h-20 opacity-10"
+            />
+          )}
         </div>
-        <h2 className="text-2xl font-black text-gray-900 mb-1">{product.name}</h2>
-        <p className="text-gray-400 font-bold">{product.brand}</p>
+        <h2 className="text-2xl font-black text-gray-900 mb-1">{product.product_name || "منتج غير معروف"}</h2>
+        <p className="text-gray-400 font-bold">{product.brands || "علامة تجارية غير معروفة"}</p>
       </div>
 
-      {/* Primary Health Card */}
       <div className={cn("rounded-[2.5rem] p-8 mb-6 text-center shadow-xl shadow-black/5 border", config.lightBg, config.border)}>
         <div className={cn("w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg", config.bg)}>
           {config.icon}
         </div>
-        <h3 className={cn("text-3xl font-black mb-2", config.text)}>{product.status}</h3>
-        <p className="text-gray-600 font-medium">{product.explanation}</p>
+        <h3 className={cn("text-3xl font-black mb-2", config.text)}>{health.label}</h3>
+        <p className="text-gray-600 font-medium">
+          {health.status === 'success' ? 'خيار ممتاز غني بالعناصر الغذائية المفيدة.' : 
+           health.status === 'warning' ? 'يحتوي على بعض المكونات التي يجب تناولها باعتدال.' : 
+           'يحتوي على نسبة عالية من السكر أو الدهون أو الملح.'}
+        </p>
       </div>
 
-      {/* Nutritional Indicators */}
       <div className="bg-white rounded-[2.5rem] p-6 shadow-sm border border-gray-50 mb-6">
-        <h4 className="text-sm font-bold text-gray-400 mb-6 text-right">المؤشرات الغذائية</h4>
+        <h4 className="text-sm font-bold text-gray-400 mb-6 text-right">المؤشرات الغذائية (لكل ١٠٠ جم)</h4>
         <div className="space-y-6">
-          {product.indicators.map((ind, i) => (
+          {indicators.map((ind, i) => (
             <div key={i} className="flex items-center justify-between">
               <div className="flex-1">
                 <div className="flex justify-between items-center mb-2">
@@ -120,19 +186,22 @@ const ProductResult = () => {
                     "text-xs font-bold px-3 py-1 rounded-full",
                     ind.status === 'success' ? 'bg-green-50 text-green-600' : 
                     ind.status === 'warning' ? 'bg-orange-50 text-orange-600' : 
-                    'bg-red-50 text-red-600'
+                    ind.status === 'danger' ? 'bg-red-50 text-red-600' :
+                    'bg-gray-50 text-gray-600'
                   )}>
-                    {ind.level}
+                    {ind.label === "غير متوفر" ? "غير متوفر" : ind.label}
                   </span>
                 </div>
                 <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
                   <div 
                     className={cn(
                       "h-full rounded-full transition-all duration-1000",
-                      ind.status === 'success' ? 'bg-green-500 w-1/3' : 
-                      ind.status === 'warning' ? 'bg-orange-500 w-2/3' : 
-                      'bg-red-500 w-full'
+                      ind.status === 'success' ? 'bg-green-500' : 
+                      ind.status === 'warning' ? 'bg-orange-500' : 
+                      ind.status === 'danger' ? 'bg-red-500' :
+                      'bg-gray-200'
                     )}
+                    style={{ width: ind.width }}
                   />
                 </div>
               </div>
@@ -141,31 +210,23 @@ const ProductResult = () => {
         </div>
       </div>
 
-      {/* Additives Section */}
-      {product.hasAdditives && (
+      {product.additives_n !== undefined && product.additives_n > 0 && (
         <div className="bg-red-50/50 border border-red-100 rounded-[2rem] p-5 flex items-center gap-4 mb-8">
           <div className="w-12 h-12 bg-red-100 rounded-2xl flex items-center justify-center shrink-0">
             <Beaker className="text-red-600" size={24} />
           </div>
           <p className="text-sm font-bold text-red-700 leading-relaxed">
-            {product.additivesText}
+            يحتوي هذا المنتج على {product.additives_n} من المواد المضافة الصناعية.
           </p>
         </div>
       )}
 
-      {/* Actions */}
       <div className="space-y-4 pb-10">
         <Button 
           className="w-full bg-primary text-white rounded-[1.5rem] py-7 text-lg font-bold shadow-xl shadow-primary/20"
           onClick={() => navigate('/scan')}
         >
           مسح منتج جديد
-        </Button>
-        <Button 
-          variant="ghost"
-          className="w-full text-gray-400 font-bold py-4"
-        >
-          إضافة إلى المفضلة
         </Button>
       </div>
     </AppLayout>
