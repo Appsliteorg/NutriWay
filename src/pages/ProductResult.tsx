@@ -4,24 +4,36 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import AppLayout from '@/components/AppLayout';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, AlertCircle, CheckCircle2, Info, Beaker, Loader2 } from 'lucide-react';
+import { ArrowRight, AlertCircle, CheckCircle2, Info, Beaker, Loader2, WifiOff } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { fetchProduct, ProductData } from '@/services/foodApi';
+import { fetchProductByBarcode, ProductData } from '@/services/productService';
+import { evaluateNutriScore, evaluateNutrient, HealthStatus } from '@/utils/ratingEngine';
 
 const ProductResult = () => {
   const { code } = useParams();
   const navigate = useNavigate();
   const [product, setProduct] = useState<ProductData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<'not_found' | 'network_error' | null>(null);
 
   useEffect(() => {
     const getProduct = async () => {
-      if (code) {
-        const data = await fetchProduct(code);
-        setProduct(data);
+      if (!code) return;
+      
+      setLoading(true);
+      setError(null);
+      
+      const response = await fetchProductByBarcode(code);
+      
+      if (response.success && response.data) {
+        setProduct(response.data);
+      } else {
+        setError(response.error || 'not_found');
       }
+      
       setLoading(false);
     };
+    
     getProduct();
   }, [code]);
 
@@ -36,7 +48,27 @@ const ProductResult = () => {
     );
   }
 
-  if (!product) {
+  if (error === 'network_error') {
+    return (
+      <AppLayout>
+        <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-6">
+          <div className="w-20 h-20 bg-orange-50 rounded-3xl flex items-center justify-center mb-6">
+            <WifiOff className="text-orange-500" size={40} />
+          </div>
+          <h2 className="text-2xl font-black text-gray-900 mb-2">خطأ في الاتصال</h2>
+          <p className="text-gray-500 mb-8">يرجى التحقق من اتصالك بالإنترنت والمحاولة مرة أخرى.</p>
+          <Button 
+            className="w-full bg-primary text-white rounded-2xl py-6 font-bold"
+            onClick={() => navigate(0)} // Refresh
+          >
+            إعادة المحاولة
+          </Button>
+        </div>
+      </AppLayout>
+    );
+  }
+
+  if (error === 'not_found' || !product) {
     return (
       <AppLayout>
         <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-6">
@@ -56,49 +88,15 @@ const ProductResult = () => {
     );
   }
 
-  // Mapping Nutri-Score to UI based on user logic
-  const getHealthStatus = (grade?: string) => {
-    if (!grade) return { label: "غير متوفر", status: "unknown", emoji: "" };
-    
-    const g = grade.toLowerCase();
-    switch (g) {
-      case "a":
-      case "b":
-        return { label: "صحي", status: "success", emoji: "🟢" };
-      case "c":
-        return { label: "متوسط", status: "warning", emoji: "🟡" };
-      case "d":
-      case "e":
-        return { label: "غير صحي", status: "danger", emoji: "🔴" };
-      default:
-        return { label: "غير متوفر", status: "unknown", emoji: "" };
-    }
-  };
-
-  const health = getHealthStatus(product.nutriscore_grade);
-
-  const getIndicatorLevel = (value: number | undefined, type: 'sugar' | 'fat' | 'salt') => {
-    if (value === undefined) return { label: "غير متوفر", status: "unknown", width: "0%" };
-    
-    const thresholds = {
-      sugar: { low: 5, high: 22.5 },
-      fat: { low: 3, high: 17.5 },
-      salt: { low: 0.3, high: 1.5 }
-    };
-
-    const t = thresholds[type];
-    if (value <= t.low) return { label: "منخفض", status: "success", width: "33%" };
-    if (value <= t.high) return { label: "متوسط", status: "warning", width: "66%" };
-    return { label: "مرتفع", status: "danger", width: "100%" };
-  };
+  const health = evaluateNutriScore(product.nutriscore_grade);
 
   const indicators = [
-    { label: "السكر", value: product.nutriments?.sugars_100g || 0, ...getIndicatorLevel(product.nutriments?.sugars_100g, 'sugar') },
-    { label: "الدهون", value: product.nutriments?.fat_100g || 0, ...getIndicatorLevel(product.nutriments?.fat_100g, 'fat') },
-    { label: "الملح", value: product.nutriments?.salt_100g || 0, ...getIndicatorLevel(product.nutriments?.salt_100g, 'salt') },
+    { label: "السكر", value: product.nutriments?.sugars_100g || 0, ...evaluateNutrient(product.nutriments?.sugars_100g, 'sugar') },
+    { label: "الدهون", value: product.nutriments?.fat_100g || 0, ...evaluateNutrient(product.nutriments?.fat_100g, 'fat') },
+    { label: "الملح", value: product.nutriments?.salt_100g || 0, ...evaluateNutrient(product.nutriments?.salt_100g, 'salt') },
   ];
 
-  const getStatusConfig = (status: string) => {
+  const getStatusConfig = (status: HealthStatus) => {
     switch (status) {
       case "success":
         return {
