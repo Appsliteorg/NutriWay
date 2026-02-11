@@ -15,6 +15,8 @@ import DataSourcesPage from "./pages/DataSources";
 import PrivacyPolicyPage from "./pages/PrivacyPolicy";
 import TermsOfUsePage from "./pages/TermsOfUse";
 import ContactPage from "./pages/Contact";
+import LicensesPage from "./pages/Licenses";
+import RateAppPage from "./pages/RateApp";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -38,6 +40,8 @@ const App = () => (
           <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
           <Route path="/terms-of-use" element={<TermsOfUsePage />} />
           <Route path="/contact" element={<ContactPage />} />
+          <Route path="/licenses" element={<LicensesPage />} />
+          <Route path="/rate-app" element={<RateAppPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
